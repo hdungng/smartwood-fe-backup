@@ -40,7 +40,14 @@ import MainCard from 'components/MainCard';
 import ScrollX from 'components/ScrollX';
 import { HeaderSort, TablePagination } from 'components/third-party/react-table';
 import { TODO_API } from 'api/constants';
-import { PAGE_LIMIT, PAGE_SIZE, TODO_LIST_STATUS, TYPE_ASC_DESC } from '../../constants';
+import {
+  PAGE_LIMIT,
+  PAGE_SIZE,
+  TODO_LIST_ROLE_STATUS,
+  TodoCountKey,
+  TodoListStatusConfig,
+  TYPE_ASC_DESC
+} from '../../constants';
 import { useIntl } from 'react-intl';
 import { useAuth } from 'hooks';
 import { Chip } from '@mui/material';
@@ -109,6 +116,8 @@ interface TodoCountList {
   containerSummary7Days: number;
   workshopPackingPlan2Days: number;
   pendingContracts: number;
+  domesticTruckScheduleByLoadingDate: number;
+  domesticTruckPerformance: number;
 };
 
 const DEFAULT_COUNT_LIST: TodoCountList = {
@@ -119,18 +128,9 @@ const DEFAULT_COUNT_LIST: TodoCountList = {
   notPlanVessel: 0,
   containerSummary7Days: 0,
   workshopPackingPlan2Days: 0,
-  pendingContracts: 0
-};
-
-const COUNT_KEY_BY_STATUS: { [key: number]: keyof TodoCountList } = {
-  1: 'noPoForPAKD',
-  2: 'noSaleContractForPAKD',
-  3: 'notPushedToEcus',
-  4: 'notPlannedLogistics',
-  5: 'notPlanVessel',
-  6: 'containerSummary7Days',
-  7: 'workshopPackingPlan2Days',
-  8: 'pendingContracts'
+  pendingContracts: 0,
+  domesticTruckScheduleByLoadingDate: 0,
+  domesticTruckPerformance: 0
 };
 
 interface TableCellWithFilterProps extends TableCellProps {
@@ -146,10 +146,7 @@ interface ReactTableProps {
   columns: { [key: number]: ColumnDef<Dynamic>[] };
   totalPage: number;
   countList: TodoCountList;
-  statuses: {
-    id: number; label: string;
-    color: Dynamic;
-  }[];
+  statuses: TodoListStatusConfig[];
   onCallData: (
     page: number,
     size: number,
@@ -231,14 +228,13 @@ function ReactTable({ data, columns, totalPage, countList, statuses, onCallData,
           sx={{ borderBottom: 1, borderColor: 'divider' }}
         >
           {statuses.map((status, index) => {
-            const countKey = COUNT_KEY_BY_STATUS[status.id];
-            const countValue = countKey ? countList[countKey] : 0;
+            const countValue = countList[status.countKey] ?? 0;
             return (
               <Tab
                 key={index}
                 label={`${intl.formatMessage({ id: status.label, defaultMessage: status.label })}`}
                 value={status.id}
-                icon={<Chip label={countValue ?? 0} color={status.color} variant="light" size="small" />}
+                icon={<Chip label={countValue} color={status.color} variant="light" size="small" />}
                 iconPosition="end"
               />
             );
@@ -329,19 +325,11 @@ export default function ToDoList() {
   const { user } = useAuth();
   const roleCode = user?.roles?.[0]?.code;
 
-  const visibleStatuses = useMemo(() => {
-    switch (roleCode) {
-      case 'DOMESTIC':
-        return TODO_LIST_STATUS.filter((s) => s.id === 4);
-      case 'LOGISTIC':
-        return TODO_LIST_STATUS.filter((s) => s.id === 5);
-      case 'QC':
-        return TODO_LIST_STATUS.filter((s) => [6, 7].includes(s.id));
-      case 'SALES':
-        return TODO_LIST_STATUS.filter((s) => [1, 2, 3, 8].includes(s.id));
-      default:
-        return TODO_LIST_STATUS;
+  const visibleStatuses = useMemo<TodoListStatusConfig[]>(() => {
+    if (roleCode && TODO_LIST_ROLE_STATUS[roleCode]) {
+      return TODO_LIST_ROLE_STATUS[roleCode];
     }
+    return TODO_LIST_ROLE_STATUS.DEFAULT;
   }, [roleCode]);
 
   const [todoList, setTodoList] = useState<Dynamic[]>([]);
@@ -350,7 +338,7 @@ export default function ToDoList() {
 
   const handleRowAction = useCallback(
     (statusId: number, rowData: Dynamic) => {
-      const status = TODO_LIST_STATUS.find((item) => item.id === statusId);
+      const status = visibleStatuses.find((item) => item.id === statusId);
       const formattedLabel = status
         ? intl.formatMessage({ id: status.label, defaultMessage: status.label })
         : `Status ${statusId}`;
@@ -378,6 +366,12 @@ export default function ToDoList() {
         case 'todo_tab_type7':
           window.alert(`${formattedLabel}: Lập kế hoạch đóng gói 2 ngày cho ${codeDisplay}`);
           break;
+        case 'todo_tab_type9':
+          window.alert(`${formattedLabel}: Kiểm tra lịch xe tải nội địa cho ${codeDisplay}`);
+          break;
+        case 'todo_tab_type10':
+          window.alert(`${formattedLabel}: Đánh giá hiệu suất xe tải nội địa của ${codeDisplay}`);
+          break;
         case 'todo_tab_type8':
           window.alert(`${formattedLabel}: Rà soát hợp đồng chờ xử lý của ${codeDisplay}`);
           break;
@@ -386,7 +380,7 @@ export default function ToDoList() {
           break;
       }
     },
-    [intl]
+    [intl, visibleStatuses]
   );
 
   const getTodoCount = useCallback(async () => {
@@ -433,32 +427,17 @@ export default function ToDoList() {
       const { data, status } = await axiosServices.get(TODO_API.GET_PAGE + `?${params.toString()}`);
 
       if (status === 200 || status === 201) {
-        const formatData: Dynamic[] = data.data?.map((item: any) => ({
-          code: item.code,
-          customerName: item.customerName,
-          totalQuantity: item.totalQuantity,
-          unitPrice: item.unitPrice,
-          deliveryLocation: item.deliveryLocation,
-          expectedDelivery: item.expectedDelivery,
-          quality: item.quality,
-          deliveryTime: item.deliveryTime,
-          location: item.location,
-          bookingCode: item.bookingCode,
-          factoryName: item.factoryName,
-          numberOfVehicles: item.numberOfVehicles,
-          country: item.country,
-          shipmentDate: item.shipmentDate
-        }));
+        const formatData: Dynamic[] = (data.data ?? []).map((item: any) => ({ ...item }));
         setTodoList(formatData);
         setTotalPage(data.meta?.totalPages || 0);
         getTodoCount();
 
         const statusId = Number(type);
-        const countKey = COUNT_KEY_BY_STATUS[statusId];
-        if (countKey) {
+        const activeStatus = visibleStatuses.find((item) => item.id === statusId);
+        if (activeStatus) {
           setCountList((prev) => ({
             ...prev,
-            [countKey]: data.meta?.totalElements ?? formatData.length ?? 0
+            [activeStatus.countKey]: data.meta?.totalElements ?? formatData.length ?? 0
           }));
         }
       }
@@ -467,242 +446,359 @@ export default function ToDoList() {
     }
   };
 
-  const columns = useMemo<{ [key: number]: ColumnDef<Dynamic>[] }>(
-    () => ({
-      1: [
-        {
-          id: 'code',
-          header: intl.formatMessage({ id: 'code_label', defaultMessage: 'Code' }),
-          accessorKey: 'code',
-          cell: ({ row }) => <TruncatedCell value={row.original.code} maxLength={15} />
-        },
-        {
-          id: 'customerName',
-          header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
-          accessorKey: 'customerName',
-          cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
-        },
-        {
-          id: 'totalQuantity',
-          header: intl.formatMessage({ id: 'quantity_label_po', defaultMessage: 'Quantity' }),
-          accessorKey: 'totalQuantity',
-          cell: ({ row }) => <TruncatedCell value={row.original.totalQuantity} maxLength={12} />
-        },
-        {
-          id: 'unitPrice',
-          header: intl.formatMessage({ id: 'unit_price_label_po', defaultMessage: 'Unit Price' }),
-          accessorKey: 'unitPrice',
-          cell: ({ row }) => <TruncatedCell value={row.original.unitPrice} maxLength={12} />
-        },
-        {
-          id: 'deliveryLocation',
-          header: intl.formatMessage({ id: 'delivery_location', defaultMessage: 'Delivery Location' }),
-          accessorKey: 'deliveryLocation',
-          cell: ({ row }) => <TruncatedCell value={row.original.deliveryLocation} maxLength={12} />
-        },
-        {
-          id: 'expectedDelivery',
-          header: intl.formatMessage({ id: 'expected_delivery_date_label', defaultMessage: 'Expected Delivery' }),
-          accessorKey: 'expectedDelivery',
-          cell: ({ row }) => <TruncatedCell value={row.original.expectedDelivery} maxLength={12} />
-        }
-      ],
-      2: [
-        {
-          id: 'code',
-          header: intl.formatMessage({ id: 'code_label', defaultMessage: 'Code' }),
-          accessorKey: 'code',
-          cell: ({ row }) => <TruncatedCell value={row.original.code} maxLength={15} />
-        },
-        {
-          id: 'customerName',
-          header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
-          accessorKey: 'customerName',
-          cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
-        },
-        {
-          id: 'totalQuantity',
-          header: intl.formatMessage({ id: 'quantity_label_po', defaultMessage: 'Quantity' }),
-          accessorKey: 'totalQuantity',
-          cell: ({ row }) => <TruncatedCell value={row.original.totalQuantity} maxLength={12} />
-        },
-        {
-          id: 'unitPrice',
-          header: intl.formatMessage({ id: 'unit_price_label_po', defaultMessage: 'Unit Price' }),
-          accessorKey: 'unitPrice',
-          cell: ({ row }) => <TruncatedCell value={row.original.unitPrice} maxLength={12} />
-        },
-        {
-          id: 'deliveryLocation',
-          header: intl.formatMessage({ id: 'delivery_location', defaultMessage: 'Delivery Location' }),
-          accessorKey: 'deliveryLocation',
-          cell: ({ row }) => <TruncatedCell value={row.original.deliveryLocation} maxLength={12} />
-        },
-        {
-          id: 'expectedDelivery',
-          header: intl.formatMessage({ id: 'expected_delivery_date_label', defaultMessage: 'Expected Delivery' }),
-          accessorKey: 'expectedDelivery',
-          cell: ({ row }) => <TruncatedCell value={row.original.expectedDelivery} maxLength={12} />
-        }
-      ],
-      3: [
-        {
-          id: 'code',
-          header: intl.formatMessage({ id: 'code_label', defaultMessage: 'Code' }),
-          accessorKey: 'code',
-          cell: ({ row }) => <TruncatedCell value={row.original.code} maxLength={15} />
-        },
-        {
-          id: 'customerName',
-          header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
-          accessorKey: 'customerName',
-          cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
-        },
-        {
-          id: 'totalQuantity',
-          header: intl.formatMessage({ id: 'quantity_label_po', defaultMessage: 'Quantity' }),
-          accessorKey: 'totalQuantity',
-          cell: ({ row }) => <TruncatedCell value={row.original.totalQuantity} maxLength={12} />
-        },
-        {
-          id: 'unitPrice',
-          header: intl.formatMessage({ id: 'unit_price_label_po', defaultMessage: 'Unit Price' }),
-          accessorKey: 'unitPrice',
-          cell: ({ row }) => <TruncatedCell value={row.original.unitPrice} maxLength={12} />
-        },
-        {
-          id: 'deliveryLocation',
-          header: intl.formatMessage({ id: 'delivery_location', defaultMessage: 'Delivery Location' }),
-          accessorKey: 'deliveryLocation',
-          cell: ({ row }) => <TruncatedCell value={row.original.deliveryLocation} maxLength={12} />
-        }
-      ],
-      4: [
-        {
-          id: 'customerName',
-          header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
-          accessorKey: 'customerName',
-          cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
-        },
-        {
-          id: 'totalQuantity',
-          header: intl.formatMessage({ id: 'quantity_label_po', defaultMessage: 'Quantity' }),
-          accessorKey: 'totalQuantity',
-          cell: ({ row }) => <TruncatedCell value={row.original.totalQuantity} maxLength={12} />
-        },
-        {
-          id: 'quality',
-          header: intl.formatMessage({ id: 'quality', defaultMessage: 'Quality' }),
-          accessorKey: 'quality',
-          cell: ({ row }) => <TruncatedCell value={row.original.quality} maxLength={12} />
-        },
-        {
-          id: 'deliveryTime',
-          header: intl.formatMessage({ id: 'delivery_time_label', defaultMessage: 'Delivery Time' }),
-          accessorKey: 'deliveryTime',
-          cell: ({ row }) => <TruncatedCell value={row.original.deliveryTime} maxLength={12} />
-        }
-      ],
-      5: [
-        {
-          id: 'customerName',
-          header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
-          accessorKey: 'customerName',
-          cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
-        },
-        {
-          id: 'totalQuantity',
-          header: intl.formatMessage({ id: 'quantity_label_po', defaultMessage: 'Quantity' }),
-          accessorKey: 'totalQuantity',
-          cell: ({ row }) => <TruncatedCell value={row.original.totalQuantity} maxLength={12} />
-        },
-        {
-          id: 'deliveryTime',
-          header: intl.formatMessage({ id: 'delivery_time_label', defaultMessage: 'Delivery Time' }),
-          accessorKey: 'deliveryTime',
-          cell: ({ row }) => <TruncatedCell value={row.original.deliveryTime} maxLength={12} />
-        },
-        {
-          id: 'deliveryLocation',
-          header: intl.formatMessage({ id: 'delivery_location', defaultMessage: 'Delivery Location' }),
-          accessorKey: 'deliveryLocation',
-          cell: ({ row }) => <TruncatedCell value={row.original.deliveryLocation} maxLength={12} />
-        },
-        {
-          id: 'location',
-          header: intl.formatMessage({ id: 'location_region_label', defaultMessage: 'Region' }),
-          accessorKey: 'location',
-          cell: ({ row }) => <TruncatedCell value={row.original.location} maxLength={12} />
-        }
-      ],
-      6: [
-        {
-          id: 'bookingCode',
-          header: intl.formatMessage({ id: 'booking_code_label', defaultMessage: 'Booking Code' }),
-          accessorKey: 'bookingCode',
-          cell: ({ row }) => <TruncatedCell value={row.original.bookingCode} maxLength={20} />
-        },
-        {
-          id: 'factoryName',
-          header: intl.formatMessage({ id: 'factory_name_label', defaultMessage: 'Factory Name' }),
-          accessorKey: 'factoryName',
-          cell: ({ row }) => <TruncatedCell value={row.original.factoryName} maxLength={20} />
-        },
-        {
-          id: 'numberOfVehicles',
-          header: intl.formatMessage({ id: 'number_of_vehicles_label', defaultMessage: 'Number Of Vehicles' }),
-          accessorKey: 'numberOfVehicles',
-          cell: ({ row }) => <TruncatedCell value={row.original.numberOfVehicles} maxLength={12} />
-        }
-      ],
-      7: [
-        {
-          id: 'bookingCode',
-          header: intl.formatMessage({ id: 'booking_code_label', defaultMessage: 'Booking Code' }),
-          accessorKey: 'bookingCode',
-          cell: ({ row }) => <TruncatedCell value={row.original.bookingCode} maxLength={20} />
-        },
-        {
-          id: 'factoryName',
-          header: intl.formatMessage({ id: 'factory_name_label', defaultMessage: 'Factory Name' }),
-          accessorKey: 'factoryName',
-          cell: ({ row }) => <TruncatedCell value={row.original.factoryName} maxLength={20} />
-        },
-        {
-          id: 'numberOfVehicles',
-          header: intl.formatMessage({ id: 'number_of_vehicles_label', defaultMessage: 'Number Of Vehicles' }),
-          accessorKey: 'numberOfVehicles',
-          cell: ({ row }) => <TruncatedCell value={row.original.numberOfVehicles} maxLength={12} />
-        }
-      ],
-      8: [
-        {
-          id: 'bookingCode',
-          header: intl.formatMessage({ id: 'booking_code_label', defaultMessage: 'Booking Code' }),
-          accessorKey: 'bookingCode',
-          cell: ({ row }) => <TruncatedCell value={row.original.bookingCode} maxLength={20} />
-        },
-        {
-          id: 'customerName',
-          header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
-          accessorKey: 'customerName',
-          cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
-        },
-        {
-          id: 'country',
-          header: intl.formatMessage({ id: 'country_label', defaultMessage: 'Country' }),
-          accessorKey: 'country',
-          cell: ({ row }) => <TruncatedCell value={row.original.country} maxLength={12} />
-        },
-        {
-          id: 'shipmentDate',
-          header: intl.formatMessage({ id: 'shipment_date_label', defaultMessage: 'Shipment Date' }),
-          accessorKey: 'shipmentDate',
-          cell: ({ row }) => <TruncatedCell value={row.original.shipmentDate} maxLength={12} />
-        }
-      ]
-    }),
-    [intl]
+  const columnDefinitions = useMemo<Record<TodoCountKey, ColumnDef<Dynamic>[]>>(() => ({
+    noPoForPAKD: [
+      {
+        id: 'code',
+        header: intl.formatMessage({ id: 'code_label', defaultMessage: 'Code' }),
+        accessorKey: 'code',
+        cell: ({ row }) => <TruncatedCell value={row.original.code} maxLength={15} />
+      },
+      {
+        id: 'customerName',
+        header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
+        accessorKey: 'customerName',
+        cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
+      },
+      {
+        id: 'totalQuantity',
+        header: intl.formatMessage({ id: 'quantity_label_po', defaultMessage: 'Quantity' }),
+        accessorKey: 'totalQuantity',
+        cell: ({ row }) => <TruncatedCell value={row.original.totalQuantity} maxLength={12} />
+      },
+      {
+        id: 'unitPrice',
+        header: intl.formatMessage({ id: 'unit_price_label_po', defaultMessage: 'Unit Price' }),
+        accessorKey: 'unitPrice',
+        cell: ({ row }) => <TruncatedCell value={row.original.unitPrice} maxLength={12} />
+      },
+      {
+        id: 'deliveryLocation',
+        header: intl.formatMessage({ id: 'delivery_location', defaultMessage: 'Delivery Location' }),
+        accessorKey: 'deliveryLocation',
+        cell: ({ row }) => <TruncatedCell value={row.original.deliveryLocation} maxLength={12} />
+      },
+      {
+        id: 'expectedDelivery',
+        header: intl.formatMessage({ id: 'expected_delivery_date_label', defaultMessage: 'Expected Delivery' }),
+        accessorKey: 'expectedDelivery',
+        cell: ({ row }) => <TruncatedCell value={row.original.expectedDelivery} maxLength={12} />
+      }
+    ],
+    noSaleContractForPAKD: [
+      {
+        id: 'code',
+        header: intl.formatMessage({ id: 'code_label', defaultMessage: 'Code' }),
+        accessorKey: 'code',
+        cell: ({ row }) => <TruncatedCell value={row.original.code} maxLength={15} />
+      },
+      {
+        id: 'customerName',
+        header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
+        accessorKey: 'customerName',
+        cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
+      },
+      {
+        id: 'totalQuantity',
+        header: intl.formatMessage({ id: 'quantity_label_po', defaultMessage: 'Quantity' }),
+        accessorKey: 'totalQuantity',
+        cell: ({ row }) => <TruncatedCell value={row.original.totalQuantity} maxLength={12} />
+      },
+      {
+        id: 'unitPrice',
+        header: intl.formatMessage({ id: 'unit_price_label_po', defaultMessage: 'Unit Price' }),
+        accessorKey: 'unitPrice',
+        cell: ({ row }) => <TruncatedCell value={row.original.unitPrice} maxLength={12} />
+      },
+      {
+        id: 'deliveryLocation',
+        header: intl.formatMessage({ id: 'delivery_location', defaultMessage: 'Delivery Location' }),
+        accessorKey: 'deliveryLocation',
+        cell: ({ row }) => <TruncatedCell value={row.original.deliveryLocation} maxLength={12} />
+      },
+      {
+        id: 'expectedDelivery',
+        header: intl.formatMessage({ id: 'expected_delivery_date_label', defaultMessage: 'Expected Delivery' }),
+        accessorKey: 'expectedDelivery',
+        cell: ({ row }) => <TruncatedCell value={row.original.expectedDelivery} maxLength={12} />
+      }
+    ],
+    notPushedToEcus: [
+      {
+        id: 'code',
+        header: intl.formatMessage({ id: 'code_label', defaultMessage: 'Code' }),
+        accessorKey: 'code',
+        cell: ({ row }) => <TruncatedCell value={row.original.code} maxLength={15} />
+      },
+      {
+        id: 'customerName',
+        header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
+        accessorKey: 'customerName',
+        cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
+      },
+      {
+        id: 'totalQuantity',
+        header: intl.formatMessage({ id: 'quantity_label_po', defaultMessage: 'Quantity' }),
+        accessorKey: 'totalQuantity',
+        cell: ({ row }) => <TruncatedCell value={row.original.totalQuantity} maxLength={12} />
+      },
+      {
+        id: 'unitPrice',
+        header: intl.formatMessage({ id: 'unit_price_label_po', defaultMessage: 'Unit Price' }),
+        accessorKey: 'unitPrice',
+        cell: ({ row }) => <TruncatedCell value={row.original.unitPrice} maxLength={12} />
+      },
+      {
+        id: 'deliveryLocation',
+        header: intl.formatMessage({ id: 'delivery_location', defaultMessage: 'Delivery Location' }),
+        accessorKey: 'deliveryLocation',
+        cell: ({ row }) => <TruncatedCell value={row.original.deliveryLocation} maxLength={12} />
+      }
+    ],
+    notPlannedLogistics: [
+      {
+        id: 'customerName',
+        header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
+        accessorKey: 'customerName',
+        cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
+      },
+      {
+        id: 'totalQuantity',
+        header: intl.formatMessage({ id: 'quantity_label_po', defaultMessage: 'Quantity' }),
+        accessorKey: 'totalQuantity',
+        cell: ({ row }) => <TruncatedCell value={row.original.totalQuantity} maxLength={12} />
+      },
+      {
+        id: 'quality',
+        header: intl.formatMessage({ id: 'quality', defaultMessage: 'Quality' }),
+        accessorKey: 'quality',
+        cell: ({ row }) => <TruncatedCell value={row.original.quality} maxLength={12} />
+      },
+      {
+        id: 'deliveryTime',
+        header: intl.formatMessage({ id: 'delivery_time_label', defaultMessage: 'Delivery Time' }),
+        accessorKey: 'deliveryTime',
+        cell: ({ row }) => <TruncatedCell value={row.original.deliveryTime} maxLength={12} />
+      }
+    ],
+    notPlanVessel: [
+      {
+        id: 'customerName',
+        header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
+        accessorKey: 'customerName',
+        cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
+      },
+      {
+        id: 'totalQuantity',
+        header: intl.formatMessage({ id: 'quantity_label_po', defaultMessage: 'Quantity' }),
+        accessorKey: 'totalQuantity',
+        cell: ({ row }) => <TruncatedCell value={row.original.totalQuantity} maxLength={12} />
+      },
+      {
+        id: 'deliveryTime',
+        header: intl.formatMessage({ id: 'delivery_time_label', defaultMessage: 'Delivery Time' }),
+        accessorKey: 'deliveryTime',
+        cell: ({ row }) => <TruncatedCell value={row.original.deliveryTime} maxLength={12} />
+      },
+      {
+        id: 'deliveryLocation',
+        header: intl.formatMessage({ id: 'delivery_location', defaultMessage: 'Delivery Location' }),
+        accessorKey: 'deliveryLocation',
+        cell: ({ row }) => <TruncatedCell value={row.original.deliveryLocation} maxLength={12} />
+      },
+      {
+        id: 'location',
+        header: intl.formatMessage({ id: 'location_region_label', defaultMessage: 'Region' }),
+        accessorKey: 'location',
+        cell: ({ row }) => <TruncatedCell value={row.original.location} maxLength={12} />
+      }
+    ],
+    containerSummary7Days: [
+      {
+        id: 'shipName',
+        header: intl.formatMessage({ id: 'ship_name_label', defaultMessage: 'Ship Name' }),
+        accessorKey: 'shipName',
+        cell: ({ row }) => <TruncatedCell value={row.original.shipName} maxLength={20} />
+      },
+      {
+        id: 'etdDate',
+        header: intl.formatMessage({ id: 'etd_date_label', defaultMessage: 'ETD Date' }),
+        accessorKey: 'etdDate',
+        cell: ({ row }) => <TruncatedCell value={row.original.etdDate} maxLength={16} />
+      },
+      {
+        id: 'etaDate',
+        header: intl.formatMessage({ id: 'eta_date_label', defaultMessage: 'ETA Date' }),
+        accessorKey: 'etaDate',
+        cell: ({ row }) => <TruncatedCell value={row.original.etaDate} maxLength={16} />
+      },
+      {
+        id: 'containerQuantity',
+        header: intl.formatMessage({ id: 'container_quantity_label', defaultMessage: 'Container Quantity' }),
+        accessorKey: 'containerQuantity',
+        cell: ({ row }) => <TruncatedCell value={row.original.containerQuantity} maxLength={12} />
+      },
+      {
+        id: 'description',
+        header: intl.formatMessage({ id: 'description_label', defaultMessage: 'Description' }),
+        accessorKey: 'description',
+        cell: ({ row }) => <TruncatedCell value={row.original.description} maxLength={20} />
+      }
+    ],
+    workshopPackingPlan2Days: [
+      {
+        id: 'supplierName',
+        header: intl.formatMessage({ id: 'supplier_name_label', defaultMessage: 'Supplier Name' }),
+        accessorKey: 'supplierName',
+        cell: ({ row }) => <TruncatedCell value={row.original.supplierName} maxLength={20} />
+      },
+      {
+        id: 'region',
+        header: intl.formatMessage({ id: 'location_region_label', defaultMessage: 'Region' }),
+        accessorKey: 'region',
+        cell: ({ row }) => <TruncatedCell value={row.original.region} maxLength={16} />
+      },
+      {
+        id: 'province',
+        header: intl.formatMessage({ id: 'province_label', defaultMessage: 'Province' }),
+        accessorKey: 'province',
+        cell: ({ row }) => <TruncatedCell value={row.original.province} maxLength={16} />
+      },
+      {
+        id: 'daysUntilStart',
+        header: intl.formatMessage({ id: 'days_until_start_label', defaultMessage: 'Days Until Start' }),
+        accessorKey: 'daysUntilStart',
+        cell: ({ row }) => <TruncatedCell value={row.original.daysUntilStart} maxLength={12} />
+      },
+      {
+        id: 'daysUntilEnd',
+        header: intl.formatMessage({ id: 'days_until_end_label', defaultMessage: 'Days Until End' }),
+        accessorKey: 'daysUntilEnd',
+        cell: ({ row }) => <TruncatedCell value={row.original.daysUntilEnd} maxLength={12} />
+      },
+      {
+        id: 'plannedQuantity',
+        header: intl.formatMessage({ id: 'planned_quantity_label', defaultMessage: 'Planned Quantity' }),
+        accessorKey: 'plannedQuantity',
+        cell: ({ row }) => <TruncatedCell value={row.original.plannedQuantity} maxLength={14} />
+      }
+    ],
+    pendingContracts: [
+      {
+        id: 'bookingCode',
+        header: intl.formatMessage({ id: 'booking_code_label', defaultMessage: 'Booking Code' }),
+        accessorKey: 'bookingCode',
+        cell: ({ row }) => <TruncatedCell value={row.original.bookingCode} maxLength={20} />
+      },
+      {
+        id: 'customerName',
+        header: intl.formatMessage({ id: 'customer_name_label', defaultMessage: 'Customer Name' }),
+        accessorKey: 'customerName',
+        cell: ({ row }) => <TruncatedCell value={row.original.customerName} maxLength={20} />
+      },
+      {
+        id: 'country',
+        header: intl.formatMessage({ id: 'country_label', defaultMessage: 'Country' }),
+        accessorKey: 'country',
+        cell: ({ row }) => <TruncatedCell value={row.original.country} maxLength={12} />
+      },
+      {
+        id: 'shipmentDate',
+        header: intl.formatMessage({ id: 'shipment_date_label', defaultMessage: 'Shipment Date' }),
+        accessorKey: 'shipmentDate',
+        cell: ({ row }) => <TruncatedCell value={row.original.shipmentDate} maxLength={12} />
+      }
+    ],
+    domesticTruckScheduleByLoadingDate: [
+      {
+        id: 'supplierName',
+        header: intl.formatMessage({ id: 'supplier_name_label', defaultMessage: 'Supplier Name' }),
+        accessorKey: 'supplierName',
+        cell: ({ row }) => <TruncatedCell value={row.original.supplierName} maxLength={20} />
+      },
+      {
+        id: 'deliveryLocation',
+        header: intl.formatMessage({ id: 'delivery_location', defaultMessage: 'Delivery Location' }),
+        accessorKey: 'deliveryLocation',
+        cell: ({ row }) => <TruncatedCell value={row.original.deliveryLocation} maxLength={18} />
+      },
+      {
+        id: 'quantity',
+        header: intl.formatMessage({ id: 'quantity_label', defaultMessage: 'Quantity' }),
+        accessorKey: 'quantity',
+        cell: ({ row }) => <TruncatedCell value={row.original.quantity} maxLength={12} />
+      },
+      {
+        id: 'totalCont',
+        header: intl.formatMessage({ id: 'total_cont_label', defaultMessage: 'Total Cont' }),
+        accessorKey: 'totalCont',
+        cell: ({ row }) => <TruncatedCell value={row.original.totalCont} maxLength={12} />
+      },
+      {
+        id: 'shipName',
+        header: intl.formatMessage({ id: 'ship_name_label', defaultMessage: 'Ship Name' }),
+        accessorKey: 'shipName',
+        cell: ({ row }) => <TruncatedCell value={row.original.shipName} maxLength={18} />
+      },
+      {
+        id: 'forwarderName',
+        header: intl.formatMessage({ id: 'forwarder_name_label', defaultMessage: 'Forwarder Name' }),
+        accessorKey: 'forwarderName',
+        cell: ({ row }) => <TruncatedCell value={row.original.forwarderName} maxLength={18} />
+      }
+    ],
+    domesticTruckPerformance: [
+      {
+        id: 'supplierName',
+        header: intl.formatMessage({ id: 'supplier_name_label', defaultMessage: 'Supplier Name' }),
+        accessorKey: 'supplierName',
+        cell: ({ row }) => <TruncatedCell value={row.original.supplierName} maxLength={20} />
+      },
+      {
+        id: 'region',
+        header: intl.formatMessage({ id: 'location_region_label', defaultMessage: 'Region' }),
+        accessorKey: 'region',
+        cell: ({ row }) => <TruncatedCell value={row.original.region} maxLength={16} />
+      },
+      {
+        id: 'startDate',
+        header: intl.formatMessage({ id: 'start_date_label', defaultMessage: 'Start Date' }),
+        accessorKey: 'startDate',
+        cell: ({ row }) => <TruncatedCell value={row.original.startDate} maxLength={16} />
+      },
+      {
+        id: 'endDate',
+        header: intl.formatMessage({ id: 'end_date_label', defaultMessage: 'End Date' }),
+        accessorKey: 'endDate',
+        cell: ({ row }) => <TruncatedCell value={row.original.endDate} maxLength={16} />
+      },
+      {
+        id: 'plannedQuantity',
+        header: intl.formatMessage({ id: 'planned_quantity_label', defaultMessage: 'Planned Quantity' }),
+        accessorKey: 'plannedQuantity',
+        cell: ({ row }) => <TruncatedCell value={row.original.plannedQuantity} maxLength={14} />
+      },
+      {
+        id: 'actualQuantity',
+        header: intl.formatMessage({ id: 'actual_quantity_label', defaultMessage: 'Actual Quantity' }),
+        accessorKey: 'actualQuantity',
+        cell: ({ row }) => <TruncatedCell value={row.original.actualQuantity} maxLength={14} />
+      },
+      {
+        id: 'delayRatio',
+        header: intl.formatMessage({ id: 'delay_ratio_label', defaultMessage: 'Delay Ratio' }),
+        accessorKey: 'delayRatio',
+        cell: ({ row }) => <TruncatedCell value={row.original.delayRatio} maxLength={12} />
+      }
+    ]
+  }), [intl]);
+
+  const columns = useMemo<{ [key: number]: ColumnDef<Dynamic>[] }>(() =>
+    visibleStatuses.reduce((acc, status) => {
+      acc[status.id] = columnDefinitions[status.columnKey] || [];
+      return acc;
+    }, {} as { [key: number]: ColumnDef<Dynamic>[] }),
+  [visibleStatuses, columnDefinitions]
   );
 
   return (

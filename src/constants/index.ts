@@ -111,45 +111,135 @@ export const TYPE_ASC_DESC = {
   DESC: 'desc'
 };
 
-export const TODO_LIST_STATUS = [
-  {
-    id: 1,
-    label: 'todo_tab_type1',
-    color: 'info'
-  },
-  {
-    id: 2,
-    label: 'todo_tab_type2',
-    color: 'success'
-  },
-  {
-    id: 3,
-    label: 'todo_tab_type3',
-    color: 'error'
-  },
-  {
-    id: 4,
-    label: 'todo_tab_type4',
-    color: 'warning'
-  },
-  {
-    id: 5,
-    label: 'todo_tab_type5',
-    color: 'info'
-  },
-  {
-    id: 6,
-    label: 'todo_tab_type6',
-    color: 'success'
-  },
-  {
-    id: 7,
-    label: 'todo_tab_type7',
-    color: 'error'
-  },
-  {
-    id: 8,
-    label: 'todo_tab_type8',
-    color: 'error'
-  }
-]
+export type TodoCountKey =
+  | 'noPoForPAKD'
+  | 'noSaleContractForPAKD'
+  | 'notPushedToEcus'
+  | 'notPlannedLogistics'
+  | 'notPlanVessel'
+  | 'containerSummary7Days'
+  | 'workshopPackingPlan2Days'
+  | 'pendingContracts'
+  | 'domesticTruckScheduleByLoadingDate'
+  | 'domesticTruckPerformance';
+
+export interface TodoListStatusConfig {
+  id: number;
+  label: string;
+  color: string;
+  countKey: TodoCountKey;
+  columnKey: TodoCountKey;
+}
+
+type TodoListRoleStatus = Record<string, TodoListStatusConfig[]>;
+
+export const TODO_LIST_ROLE_STATUS: TodoListRoleStatus = {
+  DEFAULT: [
+    {
+      id: 1,
+      label: 'todo_tab_type1',
+      color: 'info',
+      countKey: 'noPoForPAKD',
+      columnKey: 'noPoForPAKD'
+    },
+    {
+      id: 2,
+      label: 'todo_tab_type2',
+      color: 'success',
+      countKey: 'noSaleContractForPAKD',
+      columnKey: 'noSaleContractForPAKD'
+    },
+    {
+      id: 3,
+      label: 'todo_tab_type3',
+      color: 'error',
+      countKey: 'notPushedToEcus',
+      columnKey: 'notPushedToEcus'
+    },
+    {
+      id: 4,
+      label: 'todo_tab_type4',
+      color: 'warning',
+      countKey: 'notPlannedLogistics',
+      columnKey: 'notPlannedLogistics'
+    }
+  ],
+  SALES: [
+    {
+      id: 1,
+      label: 'todo_tab_type1',
+      color: 'info',
+      countKey: 'noPoForPAKD',
+      columnKey: 'noPoForPAKD'
+    },
+    {
+      id: 2,
+      label: 'todo_tab_type2',
+      color: 'success',
+      countKey: 'noSaleContractForPAKD',
+      columnKey: 'noSaleContractForPAKD'
+    },
+    {
+      id: 3,
+      label: 'todo_tab_type3',
+      color: 'error',
+      countKey: 'notPushedToEcus',
+      columnKey: 'notPushedToEcus'
+    },
+    {
+      id: 4,
+      label: 'todo_tab_type8',
+      color: 'error',
+      countKey: 'pendingContracts',
+      columnKey: 'pendingContracts'
+    }
+  ],
+  DOMESTIC: [
+    {
+      id: 1,
+      label: 'todo_tab_type4',
+      color: 'warning',
+      countKey: 'notPlannedLogistics',
+      columnKey: 'notPlannedLogistics'
+    },
+    {
+      id: 2,
+      label: 'todo_tab_type9',
+      color: 'info',
+      countKey: 'domesticTruckScheduleByLoadingDate',
+      columnKey: 'domesticTruckScheduleByLoadingDate'
+    },
+    {
+      id: 3,
+      label: 'todo_tab_type10',
+      color: 'success',
+      countKey: 'domesticTruckPerformance',
+      columnKey: 'domesticTruckPerformance'
+    }
+  ],
+  LOGISTIC: [
+    {
+      id: 1,
+      label: 'todo_tab_type5',
+      color: 'info',
+      countKey: 'notPlanVessel',
+      columnKey: 'notPlanVessel'
+    }
+  ],
+  QC: [
+    {
+      id: 1,
+      label: 'todo_tab_type6',
+      color: 'success',
+      countKey: 'containerSummary7Days',
+      columnKey: 'containerSummary7Days'
+    },
+    {
+      id: 2,
+      label: 'todo_tab_type7',
+      color: 'error',
+      countKey: 'workshopPackingPlan2Days',
+      columnKey: 'workshopPackingPlan2Days'
+    }
+  ]
+};
