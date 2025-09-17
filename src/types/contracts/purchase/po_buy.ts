@@ -1,0 +1,58 @@
+export type PurchaseContractPackingPlanGoodSupplier = {
+  id: number;
+  createdAt: string;
+  lastUpdatedAt: string;
+  createdBy: number;
+  lastUpdatedBy: number;
+  lastProgramUpdate: string | null;
+  code: string;
+  status: number;
+  lastUpdatedProgram: string;
+  supplierId: number;
+  goodId: number;
+  shippingScheduleId: number;
+  quantity: number;
+  quality: number;
+  startTime: string;
+  endTime: string;
+  realQuanity: number;
+  contractPlanId: number;
+};
+
+export type PurchaseContractPackingPlan = {
+  id: number;
+  createdAt: string;
+  lastUpdatedAt: string;
+  createdBy: number;
+  lastUpdatedBy: number;
+  lastProgramUpdate: string | null;
+  code: string;
+  status: number;
+  lastUpdatedProgram: string;
+  totalQuantity: number;
+  totalValue: number;
+  averagePricePerTon: number;
+  currency: string;
+  isApprove: boolean | null;
+  purchaseContractId: number;
+  purchaseContractPackingPlanGoodSuppliers: PurchaseContractPackingPlanGoodSupplier[];
+};
+
+export type TPOBuy = {
+  id: number;
+  createdAt: string;
+  lastUpdatedAt: string;
+  createdBy: number;
+  lastUpdatedBy: number;
+  lastProgramUpdate: string | null;
+  code: string;
+  status: number;
+  lastUpdatedProgram: string;
+  contractId: number;
+  businessPlanId: number;
+  contractDate: string;
+  sellerName: string;
+  buyerName: string;
+  purchaseContractWeighTicketId: number | null;
+  purchaseContractPackingPlan: PurchaseContractPackingPlan;
+};

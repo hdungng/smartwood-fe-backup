@@ -1,0 +1,766 @@
+[
+    {
+        "id": 11,
+        "code": "QUALITY_TYPE",
+        "status": 0,
+        "name": "Loại Chất Lượng",
+        "description": "Phân loại chất lượng sản phẩm gỗ",
+        "codeType": "BUSINESS_PLAN,SALE_CONTRACT",
+        "metaData": {
+            "screenNames": [
+                "BUSINESS_PLAN",
+                "SALE_CONTRACT"
+            ]
+        },
+        "data": [
+            {
+                "key": "Grade A",
+                "value": "A"
+            },
+            {
+                "key": "Grade B",
+                "value": "B"
+            },
+            {
+                "key": "Grade C",
+                "value": "C"
+            },
+            {
+                "key": "Premium",
+                "value": "PREMIUM"
+            },
+            {
+                "key": "Standard",
+                "value": "STANDARD"
+            },
+            {
+                "key": "Industrial",
+                "value": "INDUSTRIAL"
+            }
+        ]
+    },
+    {
+        "id": 15,
+        "code": "FORWARDER",
+        "status": 1,
+        "name": "Tên Forwarder",
+        "description": "Danh sách các công ty giao nhận vận tải",
+        "codeType": "LOGISTICS_SHIP",
+        "metaData": {
+            "screenNames": [
+                "LOGISTICS_SHIP"
+            ]
+        },
+        "data": [
+            {
+                "key": "Gemadept",
+                "value": "GEMADEPT"
+            },
+            {
+                "key": "Saigon Cargo",
+                "value": "SAIGON_CARGO"
+            },
+            {
+                "key": "Vietrans",
+                "value": "VIETRANS"
+            },
+            {
+                "key": "Haiphong Cargo",
+                "value": "HAIPHONG_CARGO"
+            },
+            {
+                "key": "DHL Supply Chain",
+                "value": "DHL_SUPPLY_CHAIN"
+            },
+            {
+                "key": "Kuehne + Nagel",
+                "value": "KUEHNE_NAGEL"
+            },
+            {
+                "key": "Pantos Logistics",
+                "value": "PANTOS_LOGISTICS"
+            },
+            {
+                "key": "Yusen Logistics",
+                "value": "YUSEN_LOGISTICS"
+            },
+            {
+                "key": "DB Schenker",
+                "value": "DB_SCHENKER"
+            },
+            {
+                "key": "CEVA Logistics",
+                "value": "CEVA_LOGISTICS"
+            }
+        ]
+    },
+    {
+        "id": 7,
+        "code": "UNIT-OF-MEASURE",
+        "status": 0,
+        "name": "Đơn vị tính",
+        "description": "Các đơn vị tính cho hàng hóa",
+        "codeType": "DRAFT_PO,SALE_CONTRACT",
+        "metaData": {
+            "screenNames": [
+                "DRAFT_PO",
+                "SALE_CONTRACT"
+            ]
+        },
+        "data": [
+            {
+                "key": "Tấn",
+                "value": "TON"
+            },
+            {
+                "key": "Kg",
+                "value": "KG"
+            }
+        ]
+    },
+    {
+        "id": 12,
+        "code": "EXPORT_PORT",
+        "status": 0,
+        "name": "Cảng Xuất",
+        "description": "Danh sách các cảng xuất hàng chính",
+        "codeType": "BUSINESS_PLAN",
+        "metaData": {
+            "screenNames": [
+                "BUSINESS_PLAN"
+            ]
+        },
+        "data": [
+            {
+                "key": "Cảng Hải Phòng",
+                "value": "HAIPHONG"
+            },
+            {
+                "key": "Cảng Đà Nẵng",
+                "value": "DANANG"
+            },
+            {
+                "key": "Cảng Quy Nhon",
+                "value": "QUYNHON"
+            },
+            {
+                "key": "Cảng Sài Gòn",
+                "value": "SAIGON"
+            },
+            {
+                "key": "Cảng Cát Lái",
+                "value": "CATIAI"
+            },
+            {
+                "key": "Cảng Hồ Chí Minh",
+                "value": "HOCHIMINH"
+            },
+            {
+                "key": "Cảng Cần Thơ",
+                "value": "CANTHO"
+            },
+            {
+                "key": "Cảng Cẩm Phả",
+                "value": "CAMPHA"
+            }
+        ]
+    },
+    {
+        "id": 22,
+        "code": "A216E7E8",
+        "status": 1,
+        "name": "Test",
+        "description": "ABCDE",
+        "codeType": "Test",
+        "metaData": {
+            "screenNames": [
+                "DRAFT_PO",
+                "CUSTOM"
+            ]
+        },
+        "data": [
+            {
+                "key": "test",
+                "value": "test"
+            },
+            {
+                "key": "test2",
+                "value": "test2"
+            }
+        ]
+    },
+    {
+        "id": 23,
+        "code": "7CD32EF3",
+        "status": 0,
+        "name": "Test",
+        "description": "ABCDE",
+        "codeType": "Test",
+        "metaData": {
+            "screenNames": [
+                "PURCHASE_ORDER",
+                "LOGISTIC_SHIP"
+            ]
+        },
+        "data": [
+            {
+                "key": "test",
+                "value": "test"
+            },
+            {
+                "key": "a",
+                "value": "a"
+            }
+        ]
+    },
+    {
+        "id": 17,
+        "code": "VEHICLE_TYPE",
+        "status": 0,
+        "name": "Loại xe",
+        "description": "Danh sách các loại phương tiện vận chuyển",
+        "codeType": "LOGISTICS_TRUCK",
+        "metaData": {
+            "screenNames": [
+                "LOGISTICS_TRUCK",
+                "INVENTORY"
+            ]
+        },
+        "data": [
+            {
+                "key": "Xe tải nhẹ",
+                "value": "LIGHT_TRUCK"
+            },
+            {
+                "key": "Xe tải trung",
+                "value": "MEDIUM_TRUCK"
+            },
+            {
+                "key": "Xe tải nặng",
+                "value": "HEAVY_TRUCK"
+            },
+            {
+                "key": "Xe container 20ft",
+                "value": "CONTAINER_20FT"
+            },
+            {
+                "key": "Xe container 40ft",
+                "value": "CONTAINER_40FT"
+            },
+            {
+                "key": "Xe bán mooc",
+                "value": "SEMI_TRAILER"
+            },
+            {
+                "key": "Xe tải thùng kín",
+                "value": "BOX_TRUCK"
+            },
+            {
+                "key": "Xe tải thùng bạt",
+                "value": "CANVAS_TRUCK"
+            },
+            {
+                "key": "Xe tải xi téc",
+                "value": "TANKER_TRUCK"
+            },
+            {
+                "key": "Xe chở ô tô",
+                "value": "CAR_CARRIER"
+            },
+            {
+                "key": "Xe làm lạnh",
+                "value": "REFRIGERATED_TRUCK"
+            },
+            {
+                "key": "Xe tải cẩu",
+                "value": "CRANE_TRUCK"
+            },
+            {
+                "key": "ac",
+                "value": "ca"
+            }
+        ]
+    },
+    {
+        "id": 10,
+        "code": "REGION",
+        "status": 1,
+        "name": "Khu Vực",
+        "description": "Phân chia khu vực địa lý cho xuất khẩu",
+        "codeType": "BUSINESS_PLAN",
+        "metaData": {
+            "screenNames": [
+                "BUSINESS_PLAN"
+            ]
+        },
+        "data": [
+            {
+                "key": "Miền Bắc",
+                "value": "NORTH"
+            },
+            {
+                "key": "Miền Trung",
+                "value": "CENTRAL"
+            },
+            {
+                "key": "Miền Nam",
+                "value": "SOUTH"
+            },
+            {
+                "key": "Đồng Bằng Sông Cửu Long",
+                "value": "MEKONG"
+            },
+            {
+                "key": "Tây Nguyên",
+                "value": "HIGHLAND"
+            }
+        ]
+    },
+    {
+        "id": 16,
+        "code": "SHIPPING_LINE",
+        "status": 1,
+        "name": "Tên Shipping line",
+        "description": "Danh sách các hãng tàu vận tải",
+        "codeType": "LOGISTICS_SHIP",
+        "metaData": {
+            "screenNames": [
+                "LOGISTICS_SHIP"
+            ]
+        },
+        "data": [
+            {
+                "key": "Maersk Line",
+                "value": "MAERSK"
+            },
+            {
+                "key": "MSC",
+                "value": "MSC"
+            },
+            {
+                "key": "COSCO",
+                "value": "COSCO"
+            },
+            {
+                "key": "CMA CGM",
+                "value": "CMA_CGM"
+            },
+            {
+                "key": "Evergreen Line",
+                "value": "EVERGREEN"
+            },
+            {
+                "key": "Hapag-Lloyd",
+                "value": "HAPAG_LLOYD"
+            },
+            {
+                "key": "ONE",
+                "value": "ONE"
+            },
+            {
+                "key": "Yang Ming",
+                "value": "YANG_MING"
+            },
+            {
+                "key": "HMM",
+                "value": "HMM"
+            },
+            {
+                "key": "PIL",
+                "value": "PIL"
+            },
+            {
+                "key": "Vinalines",
+                "value": "VINALINES"
+            },
+            {
+                "key": "Saigon Shipping",
+                "value": "SAIGON_SHIPPING"
+            }
+        ]
+    },
+    {
+        "id": 6,
+        "code": "PAYMENT-CURRENCY",
+        "status": 1,
+        "name": "Đồng tiền thanh toán",
+        "description": "Các loại tiền tệ sử dụng trong thanh toán",
+        "codeType": "DRAFT_PO,SALE_CONTRACT",
+        "metaData": {
+            "screenNames": [
+                "DRAFT_PO",
+                "SALE_CONTRACT"
+            ]
+        },
+        "data": [
+            {
+                "key": "USD",
+                "value": "USD"
+            },
+            {
+                "key": "VND",
+                "value": "VND"
+            },
+            {
+                "key": "EUR",
+                "value": "EUR"
+            },
+            {
+                "key": "JPY",
+                "value": "JPY"
+            },
+            {
+                "key": "GBP",
+                "value": "GBP"
+            },
+            {
+                "key": "CNY",
+                "value": "CNY"
+            },
+            {
+                "key": "KRW",
+                "value": "KRW"
+            },
+            {
+                "key": "THB",
+                "value": "THB"
+            },
+            {
+                "key": "SGD",
+                "value": "SGD"
+            },
+            {
+                "key": "AUD",
+                "value": "AUD"
+            }
+        ]
+    },
+    {
+        "id": 8,
+        "code": "QUALITY_TYPE",
+        "status": 1,
+        "name": "Loại chất lượng",
+        "description": "Phân loại chất lượng hàng hóa",
+        "codeType": "DRAFT_PO",
+        "metaData": {
+            "screenNames": [
+                "DRAFT_PO"
+            ]
+        },
+        "data": [
+            {
+                "key": "Grade A",
+                "value": "GRADE_A"
+            },
+            {
+                "key": "Grade B",
+                "value": "GRADE_B"
+            },
+            {
+                "key": "Grade C",
+                "value": "GRADE_C"
+            },
+            {
+                "key": "Premium",
+                "value": "PREMIUM"
+            },
+            {
+                "key": "Standard",
+                "value": "STANDARD"
+            },
+            {
+                "key": "First Class",
+                "value": "FIRST_CLASS"
+            },
+            {
+                "key": "Second Class",
+                "value": "SECOND_CLASS"
+            },
+            {
+                "key": "Export Quality",
+                "value": "EXPORT_QUALITY"
+            },
+            {
+                "key": "Domestic Quality",
+                "value": "DOMESTIC_QUALITY"
+            },
+            {
+                "key": "Industrial Grade",
+                "value": "INDUSTRIAL_GRADE"
+            }
+        ]
+    },
+    {
+        "id": 9,
+        "code": "PACKING_METHOD",
+        "status": 1,
+        "name": "Phương Thức Đóng Hàng",
+        "description": "Các phương thức đóng hàng cho sản phẩm gỗ xuất khẩu",
+        "codeType": "BUSINESS_PLAN",
+        "metaData": {
+            "screenNames": [
+                "BUSINESS_PLAN"
+            ]
+        },
+        "data": [
+            {
+                "key": "Container rời (Bulk)",
+                "value": "BULK"
+            },
+            {
+                "key": "Bao Jumbo",
+                "value": "JUMBO"
+            },
+            {
+                "key": "Bao PP 15kg",
+                "value": "PP_15"
+            },
+            {
+                "key": "Bao PP 25kg",
+                "value": "PP_25"
+            },
+            {
+                "key": "Pallet",
+                "value": "PALLET"
+            },
+            {
+                "key": "Flexi Bag",
+                "value": "FLEXI"
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "code": "DELIVERY-METHOD",
+        "status": 1,
+        "name": "Phương thức vận chuyển",
+        "description": "Các Phương thức vận chuyển (FOB, CIF, CFR, DDP, etc.)",
+        "codeType": "DRAFT_PO,BUSINESS_PLAN",
+        "metaData": {
+            "screenNames": [
+                "DRAFT_PO",
+                "BUSINESS_PLAN"
+            ]
+        },
+        "data": [
+            {
+                "key": "FOB",
+                "value": "FOB"
+            },
+            {
+                "key": "CIF",
+                "value": "CIF"
+            },
+            {
+                "key": "CFR",
+                "value": "CFR"
+            },
+            {
+                "key": "DDP",
+                "value": "DDP"
+            },
+            {
+                "key": "DDU",
+                "value": "DDU"
+            },
+            {
+                "key": "EXW",
+                "value": "EXW"
+            },
+            {
+                "key": "FCA",
+                "value": "FCA"
+            },
+            {
+                "key": "CPT",
+                "value": "CPT"
+            },
+            {
+                "key": "CIP",
+                "value": "CIP"
+            },
+            {
+                "key": "DAP",
+                "value": "DAP"
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "code": "PAYMENT_METHOD",
+        "status": 1,
+        "name": "Phương thức thanh toán",
+        "description": "Các phương thức thanh toán (L/C, T/T, D/P, D/A, etc.)",
+        "codeType": "DRAFT_PO",
+        "metaData": {
+            "screenNames": [
+                "DRAFT_PO"
+            ]
+        },
+        "data": [
+            {
+                "key": "L/C",
+                "value": "LC"
+            },
+            {
+                "key": "T/T",
+                "value": "TT"
+            },
+            {
+                "key": "D/P",
+                "value": "DP"
+            },
+            {
+                "key": "D/A",
+                "value": "DA"
+            },
+            {
+                "key": "Cash",
+                "value": "CASH"
+            },
+            {
+                "key": "O/A",
+                "value": "OA"
+            },
+            {
+                "key": "CAD",
+                "value": "CAD"
+            },
+            {
+                "key": "Advance Payment",
+                "value": "ADVANCE"
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "code": "COUNTRY-IMPORT",
+        "status": 1,
+        "name": "Nước nhập khẩu",
+        "description": "Danh sách các nước nhập khẩu",
+        "codeType": "DRAFT_PO",
+        "metaData": {
+            "screenNames": [
+                "DRAFT_PO"
+            ]
+        },
+        "data": [
+            {
+                "key": "Việt Nam",
+                "value": "VN"
+            },
+            {
+                "key": "Trung Quốc",
+                "value": "CN"
+            },
+            {
+                "key": "Nhật Bản",
+                "value": "JP"
+            },
+            {
+                "key": "Hàn Quốc",
+                "value": "KR"
+            },
+            {
+                "key": "Thái Lan",
+                "value": "TH"
+            },
+            {
+                "key": "Singapore",
+                "value": "SG"
+            },
+            {
+                "key": "Malaysia",
+                "value": "MY"
+            },
+            {
+                "key": "Indonesia",
+                "value": "ID"
+            },
+            {
+                "key": "Philippines",
+                "value": "PH"
+            },
+            {
+                "key": "Ấn Độ",
+                "value": "IN"
+            },
+            {
+                "key": "Hoa Kỳ",
+                "value": "US"
+            },
+            {
+                "key": "Đức",
+                "value": "DE"
+            },
+            {
+                "key": "Pháp",
+                "value": "FR"
+            },
+            {
+                "key": "Anh",
+                "value": "GB"
+            },
+            {
+                "key": "Australia",
+                "value": "AU"
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "code": "PORT-DESTINATION",
+        "status": 1,
+        "name": "Cảng đến",
+        "description": "Danh sách các cảng đến/địa điểm nhận hàng",
+        "codeType": "DRAFT_PO,SALE_CONTRACT",
+        "metaData": {
+            "screenNames": [
+                "DRAFT_PO",
+                "SALE_CONTRACT"
+            ]
+        },
+        "data": [
+            {
+                "key": "Cảng Hải Phòng",
+                "value": "Cảng Hải Phòng"
+            },
+            {
+                "key": "Cảng Sài Gòn",
+                "value": "Cảng Sài Gòn"
+            },
+            {
+                "key": "Cảng Cát Lái",
+                "value": "Cảng Cát Lái"
+            },
+            {
+                "key": "Cảng Đà Nẵng",
+                "value": "Cảng Đà Nẵng"
+            },
+            {
+                "key": "Cảng Dung Quất",
+                "value": "Cảng Dung Quất"
+            },
+            {
+                "key": "Cảng Quy Nhon",
+                "value": "Cảng Quy Nhon"
+            },
+            {
+                "key": "Cảng Cần Thơ",
+                "value": "CAN_THO"
+            },
+            {
+                "key": "Cảng Hòn Gai",
+                "value": "Cảng Hòn Gai "
+            },
+            {
+                "key": "Cảng Nghi Sơn",
+                "value": "NGHI_SON"
+            },
+            {
+                "key": "Cảng Chu Lai",
+                "value": "CHU_LAI"
+            }
+        ]
+    }
+]

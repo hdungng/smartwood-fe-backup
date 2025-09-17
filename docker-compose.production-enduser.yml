@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - ENV_FILE=.env.production-enduser
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - VITE_APP_BASE_NAME=/
+    ports:
+      - '8080:80'

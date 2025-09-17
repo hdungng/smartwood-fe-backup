@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - ENV_FILE=.env.develop
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - VITE_APP_BASE_NAME=/
+    ports:
+      - '9090:80'
