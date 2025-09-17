@@ -799,6 +799,7 @@ export default function ToDoList() {
       return acc;
     }, {} as { [key: number]: ColumnDef<Dynamic>[] }),
   [visibleStatuses, columnDefinitions]
+
   );
 
   return (
