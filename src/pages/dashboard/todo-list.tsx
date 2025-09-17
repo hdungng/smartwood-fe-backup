@@ -109,6 +109,8 @@ interface TodoCountList {
   containerSummary7Days: number;
   workshopPackingPlan2Days: number;
   pendingContracts: number;
+  domesticTruckScheduleByLoadingDate: number;
+  domesticTruckPerformance: number;
 };
 
 const DEFAULT_COUNT_LIST: TodoCountList = {
@@ -119,7 +121,9 @@ const DEFAULT_COUNT_LIST: TodoCountList = {
   notPlanVessel: 0,
   containerSummary7Days: 0,
   workshopPackingPlan2Days: 0,
-  pendingContracts: 0
+  pendingContracts: 0,
+  domesticTruckScheduleByLoadingDate: 0,
+  domesticTruckPerformance: 0
 };
 
 const COUNT_KEY_BY_STATUS: { [key: number]: keyof TodoCountList } = {
@@ -130,7 +134,9 @@ const COUNT_KEY_BY_STATUS: { [key: number]: keyof TodoCountList } = {
   5: 'notPlanVessel',
   6: 'containerSummary7Days',
   7: 'workshopPackingPlan2Days',
-  8: 'pendingContracts'
+  8: 'pendingContracts',
+  9: 'domesticTruckScheduleByLoadingDate',
+  10: 'domesticTruckPerformance'
 };
 
 interface TableCellWithFilterProps extends TableCellProps {
@@ -332,7 +338,7 @@ export default function ToDoList() {
   const visibleStatuses = useMemo(() => {
     switch (roleCode) {
       case 'DOMESTIC':
-        return TODO_LIST_STATUS.filter((s) => s.id === 4);
+        return TODO_LIST_STATUS.filter((s) => [4, 9, 10].includes(s.id));
       case 'LOGISTIC':
         return TODO_LIST_STATUS.filter((s) => s.id === 5);
       case 'QC':
@@ -377,6 +383,12 @@ export default function ToDoList() {
           break;
         case 'todo_tab_type7':
           window.alert(`${formattedLabel}: Lập kế hoạch đóng gói 2 ngày cho ${codeDisplay}`);
+          break;
+        case 'todo_tab_type9':
+          window.alert(`${formattedLabel}: Kiểm tra lịch xe tải nội địa cho ${codeDisplay}`);
+          break;
+        case 'todo_tab_type10':
+          window.alert(`${formattedLabel}: Đánh giá hiệu suất xe tải nội địa của ${codeDisplay}`);
           break;
         case 'todo_tab_type8':
           window.alert(`${formattedLabel}: Rà soát hợp đồng chờ xử lý của ${codeDisplay}`);
@@ -433,22 +445,7 @@ export default function ToDoList() {
       const { data, status } = await axiosServices.get(TODO_API.GET_PAGE + `?${params.toString()}`);
 
       if (status === 200 || status === 201) {
-        const formatData: Dynamic[] = data.data?.map((item: any) => ({
-          code: item.code,
-          customerName: item.customerName,
-          totalQuantity: item.totalQuantity,
-          unitPrice: item.unitPrice,
-          deliveryLocation: item.deliveryLocation,
-          expectedDelivery: item.expectedDelivery,
-          quality: item.quality,
-          deliveryTime: item.deliveryTime,
-          location: item.location,
-          bookingCode: item.bookingCode,
-          factoryName: item.factoryName,
-          numberOfVehicles: item.numberOfVehicles,
-          country: item.country,
-          shipmentDate: item.shipmentDate
-        }));
+        const formatData: Dynamic[] = (data.data ?? []).map((item: any) => ({ ...item }));
         setTodoList(formatData);
         setTotalPage(data.meta?.totalPages || 0);
         getTodoCount();
@@ -637,42 +634,154 @@ export default function ToDoList() {
       ],
       6: [
         {
-          id: 'bookingCode',
-          header: intl.formatMessage({ id: 'booking_code_label', defaultMessage: 'Booking Code' }),
-          accessorKey: 'bookingCode',
-          cell: ({ row }) => <TruncatedCell value={row.original.bookingCode} maxLength={20} />
+          id: 'shipName',
+          header: intl.formatMessage({ id: 'ship_name_label', defaultMessage: 'Ship Name' }),
+          accessorKey: 'shipName',
+          cell: ({ row }) => <TruncatedCell value={row.original.shipName} maxLength={20} />
         },
         {
-          id: 'factoryName',
-          header: intl.formatMessage({ id: 'factory_name_label', defaultMessage: 'Factory Name' }),
-          accessorKey: 'factoryName',
-          cell: ({ row }) => <TruncatedCell value={row.original.factoryName} maxLength={20} />
+          id: 'etdDate',
+          header: intl.formatMessage({ id: 'etd_date_label', defaultMessage: 'ETD Date' }),
+          accessorKey: 'etdDate',
+          cell: ({ row }) => <TruncatedCell value={row.original.etdDate} maxLength={16} />
         },
         {
-          id: 'numberOfVehicles',
-          header: intl.formatMessage({ id: 'number_of_vehicles_label', defaultMessage: 'Number Of Vehicles' }),
-          accessorKey: 'numberOfVehicles',
-          cell: ({ row }) => <TruncatedCell value={row.original.numberOfVehicles} maxLength={12} />
+          id: 'etaDate',
+          header: intl.formatMessage({ id: 'eta_date_label', defaultMessage: 'ETA Date' }),
+          accessorKey: 'etaDate',
+          cell: ({ row }) => <TruncatedCell value={row.original.etaDate} maxLength={16} />
+        },
+        {
+          id: 'containerQuantity',
+          header: intl.formatMessage({ id: 'container_quantity_label', defaultMessage: 'Container Quantity' }),
+          accessorKey: 'containerQuantity',
+          cell: ({ row }) => <TruncatedCell value={row.original.containerQuantity} maxLength={12} />
+        },
+        {
+          id: 'description',
+          header: intl.formatMessage({ id: 'description_label', defaultMessage: 'Description' }),
+          accessorKey: 'description',
+          cell: ({ row }) => <TruncatedCell value={row.original.description} maxLength={20} />
         }
       ],
       7: [
         {
-          id: 'bookingCode',
-          header: intl.formatMessage({ id: 'booking_code_label', defaultMessage: 'Booking Code' }),
-          accessorKey: 'bookingCode',
-          cell: ({ row }) => <TruncatedCell value={row.original.bookingCode} maxLength={20} />
+          id: 'supplierName',
+          header: intl.formatMessage({ id: 'supplier_name_label', defaultMessage: 'Supplier Name' }),
+          accessorKey: 'supplierName',
+          cell: ({ row }) => <TruncatedCell value={row.original.supplierName} maxLength={20} />
         },
         {
-          id: 'factoryName',
-          header: intl.formatMessage({ id: 'factory_name_label', defaultMessage: 'Factory Name' }),
-          accessorKey: 'factoryName',
-          cell: ({ row }) => <TruncatedCell value={row.original.factoryName} maxLength={20} />
+          id: 'region',
+          header: intl.formatMessage({ id: 'location_region_label', defaultMessage: 'Region' }),
+          accessorKey: 'region',
+          cell: ({ row }) => <TruncatedCell value={row.original.region} maxLength={16} />
         },
         {
-          id: 'numberOfVehicles',
-          header: intl.formatMessage({ id: 'number_of_vehicles_label', defaultMessage: 'Number Of Vehicles' }),
-          accessorKey: 'numberOfVehicles',
-          cell: ({ row }) => <TruncatedCell value={row.original.numberOfVehicles} maxLength={12} />
+          id: 'province',
+          header: intl.formatMessage({ id: 'province_label', defaultMessage: 'Province' }),
+          accessorKey: 'province',
+          cell: ({ row }) => <TruncatedCell value={row.original.province} maxLength={16} />
+        },
+        {
+          id: 'daysUntilStart',
+          header: intl.formatMessage({ id: 'days_until_start_label', defaultMessage: 'Days Until Start' }),
+          accessorKey: 'daysUntilStart',
+          cell: ({ row }) => <TruncatedCell value={row.original.daysUntilStart} maxLength={12} />
+        },
+        {
+          id: 'daysUntilEnd',
+          header: intl.formatMessage({ id: 'days_until_end_label', defaultMessage: 'Days Until End' }),
+          accessorKey: 'daysUntilEnd',
+          cell: ({ row }) => <TruncatedCell value={row.original.daysUntilEnd} maxLength={12} />
+        },
+        {
+          id: 'plannedQuantity',
+          header: intl.formatMessage({ id: 'planned_quantity_label', defaultMessage: 'Planned Quantity' }),
+          accessorKey: 'plannedQuantity',
+          cell: ({ row }) => <TruncatedCell value={row.original.plannedQuantity} maxLength={14} />
+        }
+      ],
+      9: [
+        {
+          id: 'supplierName',
+          header: intl.formatMessage({ id: 'supplier_name_label', defaultMessage: 'Supplier Name' }),
+          accessorKey: 'supplierName',
+          cell: ({ row }) => <TruncatedCell value={row.original.supplierName} maxLength={20} />
+        },
+        {
+          id: 'deliveryLocation',
+          header: intl.formatMessage({ id: 'delivery_location', defaultMessage: 'Delivery Location' }),
+          accessorKey: 'deliveryLocation',
+          cell: ({ row }) => <TruncatedCell value={row.original.deliveryLocation} maxLength={18} />
+        },
+        {
+          id: 'quantity',
+          header: intl.formatMessage({ id: 'quantity_label', defaultMessage: 'Quantity' }),
+          accessorKey: 'quantity',
+          cell: ({ row }) => <TruncatedCell value={row.original.quantity} maxLength={12} />
+        },
+        {
+          id: 'totalCont',
+          header: intl.formatMessage({ id: 'total_cont_label', defaultMessage: 'Total Cont' }),
+          accessorKey: 'totalCont',
+          cell: ({ row }) => <TruncatedCell value={row.original.totalCont} maxLength={12} />
+        },
+        {
+          id: 'shipName',
+          header: intl.formatMessage({ id: 'ship_name_label', defaultMessage: 'Ship Name' }),
+          accessorKey: 'shipName',
+          cell: ({ row }) => <TruncatedCell value={row.original.shipName} maxLength={18} />
+        },
+        {
+          id: 'forwarderName',
+          header: intl.formatMessage({ id: 'forwarder_name_label', defaultMessage: 'Forwarder Name' }),
+          accessorKey: 'forwarderName',
+          cell: ({ row }) => <TruncatedCell value={row.original.forwarderName} maxLength={18} />
+        }
+      ],
+      10: [
+        {
+          id: 'supplierName',
+          header: intl.formatMessage({ id: 'supplier_name_label', defaultMessage: 'Supplier Name' }),
+          accessorKey: 'supplierName',
+          cell: ({ row }) => <TruncatedCell value={row.original.supplierName} maxLength={20} />
+        },
+        {
+          id: 'region',
+          header: intl.formatMessage({ id: 'location_region_label', defaultMessage: 'Region' }),
+          accessorKey: 'region',
+          cell: ({ row }) => <TruncatedCell value={row.original.region} maxLength={16} />
+        },
+        {
+          id: 'startDate',
+          header: intl.formatMessage({ id: 'start_date_label', defaultMessage: 'Start Date' }),
+          accessorKey: 'startDate',
+          cell: ({ row }) => <TruncatedCell value={row.original.startDate} maxLength={16} />
+        },
+        {
+          id: 'endDate',
+          header: intl.formatMessage({ id: 'end_date_label', defaultMessage: 'End Date' }),
+          accessorKey: 'endDate',
+          cell: ({ row }) => <TruncatedCell value={row.original.endDate} maxLength={16} />
+        },
+        {
+          id: 'plannedQuantity',
+          header: intl.formatMessage({ id: 'planned_quantity_label', defaultMessage: 'Planned Quantity' }),
+          accessorKey: 'plannedQuantity',
+          cell: ({ row }) => <TruncatedCell value={row.original.plannedQuantity} maxLength={14} />
+        },
+        {
+          id: 'actualQuantity',
+          header: intl.formatMessage({ id: 'actual_quantity_label', defaultMessage: 'Actual Quantity' }),
+          accessorKey: 'actualQuantity',
+          cell: ({ row }) => <TruncatedCell value={row.original.actualQuantity} maxLength={14} />
+        },
+        {
+          id: 'delayRatio',
+          header: intl.formatMessage({ id: 'delay_ratio_label', defaultMessage: 'Delay Ratio' }),
+          accessorKey: 'delayRatio',
+          cell: ({ row }) => <TruncatedCell value={row.original.delayRatio} maxLength={12} />
         }
       ],
       8: [
