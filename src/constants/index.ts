@@ -133,6 +133,16 @@ export const TODO_LIST_STATUS = [
     color: 'warning'
   },
   {
+    id: 9,
+    label: 'todo_tab_type9',
+    color: 'info'
+  },
+  {
+    id: 10,
+    label: 'todo_tab_type10',
+    color: 'success'
+  },
+  {
     id: 5,
     label: 'todo_tab_type5',
     color: 'info'
